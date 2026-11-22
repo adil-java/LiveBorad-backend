@@ -16,6 +16,8 @@ public sealed class MongoContext
         Cards = Database.GetCollection<Card>("cards");
         Activity = Database.GetCollection<ActivityEntry>("activity");
         Users = Database.GetCollection<UserProfile>("users");
+        Chat = Database.GetCollection<ChatMessage>("chatMessages");
+        Strokes = Database.GetCollection<Stroke>("strokes");
     }
 
     public IMongoDatabase Database { get; }
@@ -23,6 +25,8 @@ public sealed class MongoContext
     public IMongoCollection<Card> Cards { get; }
     public IMongoCollection<ActivityEntry> Activity { get; }
     public IMongoCollection<UserProfile> Users { get; }
+    public IMongoCollection<ChatMessage> Chat { get; }
+    public IMongoCollection<Stroke> Strokes { get; }
 
     /// <summary>Idempotent: createIndexes is a no-op when an identical index exists.</summary>
     public async Task EnsureIndexesAsync(CancellationToken ct)
@@ -41,6 +45,12 @@ public sealed class MongoContext
 
         await Users.Indexes.CreateOneAsync(new CreateIndexModel<UserProfile>(
             Builders<UserProfile>.IndexKeys.Ascending(u => u.Email)), cancellationToken: ct);
+
+        await Chat.Indexes.CreateOneAsync(new CreateIndexModel<ChatMessage>(
+            Builders<ChatMessage>.IndexKeys.Ascending(m => m.BoardId).Descending(m => m.CreatedAt)), cancellationToken: ct);
+
+        await Strokes.Indexes.CreateOneAsync(new CreateIndexModel<Stroke>(
+            Builders<Stroke>.IndexKeys.Ascending(s => s.BoardId).Ascending(s => s.CreatedAt)), cancellationToken: ct);
     }
 }
 
@@ -84,6 +94,8 @@ public static class MongoServiceCollectionExtensions
         services.AddSingleton<CardRepository>();
         services.AddSingleton<ActivityRepository>();
         services.AddSingleton<UserRepository>();
+        services.AddSingleton<ChatRepository>();
+        services.AddSingleton<StrokeRepository>();
         services.AddHostedService<MongoIndexInitializer>();
         return services;
     }

@@ -69,7 +69,9 @@ app.MapGroup("/api")
     .MapColumnEndpoints()
     .MapCardEndpoints()
     .MapMemberEndpoints()
-    .MapActivityEndpoints();
+    .MapActivityEndpoints()
+    .MapChatEndpoints()
+    .MapDrawingEndpoints();
 
 app.MapHub<BoardHub>("/hubs/board");
 

@@ -64,7 +64,7 @@ public static class BoardEndpoints
 
     private static async Task<NoContent> DeleteAsync(
         Guid boardId, ClaimsPrincipal user, BoardAccess access, BoardRepository boards, CardRepository cards,
-        ActivityRepository activity, BoardEvents events, CancellationToken ct)
+        ActivityRepository activity, ChatRepository chat, StrokeRepository strokes, BoardEvents events, CancellationToken ct)
     {
         await access.RequireAsync(boardId, user.GetUserId(), BoardRole.Owner, ct);
 
@@ -72,6 +72,8 @@ public static class BoardEndpoints
         await boards.DeleteAsync(boardId, ct);
         await cards.DeleteByBoardAsync(boardId, ct);
         await activity.DeleteByBoardAsync(boardId, ct);
+        await chat.DeleteByBoardAsync(boardId, ct);
+        await strokes.DeleteByBoardAsync(boardId, ct);
 
         await events.Others(boardId).BoardDeleted(boardId);
         return TypedResults.NoContent();

@@ -46,4 +46,10 @@ public static class Mapping
 
     public static ActivityDto ToDto(this ActivityEntry entry) =>
         new(entry.Id, entry.ActorId, entry.ActorName, entry.Type, entry.Summary, entry.CardId, entry.CreatedAt);
+
+    public static ChatMessageDto ToDto(this ChatMessage message) =>
+        new(message.Id, message.BoardId, message.AuthorId, message.AuthorName, message.Text, message.CreatedAt);
+
+    public static StrokeDto ToDto(this Stroke stroke) =>
+        new(stroke.Id, stroke.BoardId, stroke.AuthorId, stroke.Tool, stroke.Color, stroke.Width, stroke.Points, stroke.CreatedAt);
 }

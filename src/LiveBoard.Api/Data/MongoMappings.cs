@@ -57,6 +57,18 @@ public static class MongoMappings
             map.MapIdMember(a => a.Id);
         });
 
+        BsonClassMap.TryRegisterClassMap<ChatMessage>(map =>
+        {
+            map.AutoMap();
+            map.MapIdMember(m => m.Id);
+        });
+
+        BsonClassMap.TryRegisterClassMap<Stroke>(map =>
+        {
+            map.AutoMap();
+            map.MapIdMember(s => s.Id);
+        });
+
         BsonClassMap.TryRegisterClassMap<UserProfile>(map =>
         {
             map.AutoMap();

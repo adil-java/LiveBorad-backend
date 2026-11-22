@@ -1,4 +1,5 @@
 using LiveBoard.Api.Features;
+using LiveBoard.Domain;
 
 namespace LiveBoard.Api.Realtime;
 
@@ -26,4 +27,14 @@ public interface IBoardClient
     Task CardEditing(Guid boardId, Guid cardId, PresenceUserDto user, bool isEditing);
 
     Task ActivityAdded(ActivityDto activity);
+
+    Task ChatMessageAdded(ChatMessageDto message);
+    Task ChatMessageDeleted(Guid boardId, Guid messageId);
+    Task ChatTyping(Guid boardId, PresenceUserDto user);
+
+    Task StrokeAdded(StrokeDto stroke);
+    /// <summary>Points drawn since the previous progress message for this stroke, so others see it being drawn.</summary>
+    Task StrokeProgress(Guid boardId, Guid strokeId, PresenceUserDto user, StrokeTool tool, string color, double width, IReadOnlyList<double> points);
+    Task StrokesErased(Guid boardId, IReadOnlyList<Guid> strokeIds);
+    Task DrawingCleared(Guid boardId);
 }
