@@ -56,6 +56,18 @@ public sealed class BoardEvents(
             await Everyone(boardId).CallParticipantsChanged(boardId, presence.CallOn(boardId));
     }
 
+    /// <summary>Disconnects everyone from a room that is being deleted and tells them why.</summary>
+    public async Task EndRoomAsync(Guid roomId)
+    {
+        var group = BoardHub.GroupName(roomId);
+        foreach (var entry in presence.EntriesOn(roomId))
+        {
+            presence.Leave(entry.ConnectionId);
+            await hub.Groups.RemoveFromGroupAsync(entry.ConnectionId, group);
+            await hub.Clients.Client(entry.ConnectionId).RoomEnded(roomId);
+        }
+    }
+
     /// <summary>Applies a role change to live connections so hub permission checks see it without rejoining.</summary>
     public void UpdateLiveRole(Guid boardId, string userId, BoardRole role)
     {

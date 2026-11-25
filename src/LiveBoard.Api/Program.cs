@@ -27,7 +27,11 @@ builder.Services.AddHealthChecks().AddCheck<MongoHealthCheck>("mongo");
 
 // ---- Auth ----
 builder.Services.AddFirebaseAuthentication();
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+    // Guests (Firebase anonymous sign-in, used to join call rooms by code) may only use rooms.
+    options.AddPolicy(AuthPolicies.Registered, policy => policy
+        .RequireAuthenticatedUser()
+        .RequireAssertion(context => !context.User.IsGuest())));
 builder.Services.AddScoped<BoardAccess>();
 
 // ---- Real-time ----
@@ -64,7 +68,7 @@ if (app.Environment.IsDevelopment())
 app.MapHealthChecks("/health");
 
 app.MapGroup("/api")
-    .RequireAuthorization()
+    .RequireAuthorization(AuthPolicies.Registered)
     .MapMeEndpoints()
     .MapBoardEndpoints()
     .MapColumnEndpoints()
@@ -72,8 +76,16 @@ app.MapGroup("/api")
     .MapMemberEndpoints()
     .MapActivityEndpoints()
     .MapChatEndpoints()
-    .MapDrawingEndpoints()
+    .MapDrawingEndpoints();
+
+// Open to guests too: anyone in a room's call needs the STUN/TURN servers to connect.
+app.MapGroup("/api")
+    .RequireAuthorization()
     .MapCallEndpoints();
+
+app.MapGroup("/api/rooms")
+    .RequireAuthorization() // guests allowed here; endpoints that need an account say so
+    .MapRoomEndpoints();
 
 app.MapHub<BoardHub>("/hubs/board");
 

@@ -20,9 +20,13 @@ public sealed class PresenceEntry(string connectionId, Guid boardId, string user
     public bool CameraOn { get; set; }
     public bool ScreenSharing { get; set; }
 
+    /// <summary>True when this connection is in a call room rather than on a board (BoardId then holds the room ID).</summary>
+    public bool IsRoom { get; init; }
+    public bool IsGuest { get; init; }
+
     public PresenceUserDto ToUser() => new(UserId, DisplayName);
 
-    public CallParticipantDto ToCallParticipant() => new(ConnectionId, UserId, DisplayName, MicOn, CameraOn, ScreenSharing);
+    public CallParticipantDto ToCallParticipant() => new(ConnectionId, UserId, DisplayName, MicOn, CameraOn, ScreenSharing, IsGuest);
 }
 
 /// <summary>
@@ -89,6 +93,10 @@ public sealed class PresenceTracker
             entry.MicOn = entry.CameraOn = entry.ScreenSharing = false;
         }
     }
+
+    /// <summary>Every connection on a board or in a room.</summary>
+    public IReadOnlyList<PresenceEntry> EntriesOn(Guid spaceId) =>
+        _byConnection.Values.Where(e => e.BoardId == spaceId).ToList();
 
     public IReadOnlyList<PresenceEntry> ConnectionsOf(Guid boardId, string userId) =>
         _byConnection.Values.Where(e => e.BoardId == boardId && e.UserId == userId).ToList();

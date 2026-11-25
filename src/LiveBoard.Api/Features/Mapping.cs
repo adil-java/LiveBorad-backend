@@ -50,6 +50,9 @@ public static class Mapping
     public static ChatMessageDto ToDto(this ChatMessage message) =>
         new(message.Id, message.BoardId, message.AuthorId, message.AuthorName, message.Text, message.CreatedAt);
 
+    public static RoomDto ToDto(this Room room, int peopleInCall) =>
+        new(room.Id, room.Code, room.Name, room.OwnerId, room.OwnerName, room.CreatedAt, peopleInCall);
+
     public static StrokeDto ToDto(this Stroke stroke) =>
         new(stroke.Id, stroke.BoardId, stroke.AuthorId, stroke.Tool, stroke.Color, stroke.Width, stroke.Points, stroke.CreatedAt);
 }

@@ -66,7 +66,12 @@ public sealed record MembersDto(IReadOnlyList<MemberDto> Members, IReadOnlyList<
 public sealed record PresenceUserDto(string UserId, string DisplayName);
 
 /// <summary>One browser connection in a board's call. <see cref="ConnectionId"/> is the peer address for signalling.</summary>
-public sealed record CallParticipantDto(string ConnectionId, string UserId, string DisplayName, bool MicOn, bool CameraOn, bool ScreenSharing);
+public sealed record CallParticipantDto(string ConnectionId, string UserId, string DisplayName, bool MicOn, bool CameraOn, bool ScreenSharing, bool IsGuest);
+
+public sealed record CreateRoomRequest(string? Name);
+
+/// <summary>A call room. <see cref="PeopleInCall"/> lets the join screen say who is already there.</summary>
+public sealed record RoomDto(Guid Id, string Code, string Name, string OwnerId, string OwnerName, DateTime CreatedAt, int PeopleInCall);
 
 /// <summary>A STUN/TURN server for WebRTC, in the shape browsers expect (RTCIceServer).</summary>
 public sealed record IceServerDto(IReadOnlyList<string> Urls, string? Username, string? Credential);

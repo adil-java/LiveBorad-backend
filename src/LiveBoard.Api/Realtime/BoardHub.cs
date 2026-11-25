@@ -14,7 +14,7 @@ namespace LiveBoard.Api.Realtime;
 /// through <see cref="BoardEvents"/>. This keeps a single, testable write path.
 /// </summary>
 [Authorize]
-public sealed class BoardHub(PresenceTracker presence, BoardRepository boards, BoardEvents events, TimeProvider clock) : Hub<IBoardClient>
+public sealed class BoardHub(PresenceTracker presence, BoardRepository boards, RoomRepository rooms, BoardEvents events, TimeProvider clock) : Hub<IBoardClient>
 {
     /// <summary>Calls are peer-to-peer (every participant sends to every other), which stays smooth up to about this size.</summary>
     public const int MaxCallParticipants = 6;
@@ -30,6 +30,8 @@ public sealed class BoardHub(PresenceTracker presence, BoardRepository boards, B
     public async Task<IReadOnlyList<PresenceUserDto>> JoinBoard(Guid boardId)
     {
         var user = Context.User!;
+        if (user.IsGuest())
+            throw new HubException("Guests can only join call rooms.");
         var board = await boards.GetAsync(boardId, Context.ConnectionAborted);
         var role = board?.RoleOf(user.GetUserId())
             ?? throw new HubException("Board not found.");
@@ -47,6 +49,39 @@ public sealed class BoardHub(PresenceTracker presence, BoardRepository boards, B
 
     public Task LeaveBoard() => LeaveCurrentBoardAsync();
 
+    /// <summary>
+    /// Enters a call room by its code. Anyone with the code may join, including guests (Firebase anonymous sign-in),
+    /// who must give a display name. Joining a room only allows the call methods; rooms carry no board data.
+    /// </summary>
+    public async Task<RoomDto> JoinRoom(string code, string? displayName)
+    {
+        var user = Context.User!;
+        var normalized = Room.NormalizeCode(code) ?? throw new HubException("That isn't a valid room code.");
+        var room = await rooms.GetByCodeAsync(normalized, Context.ConnectionAborted)
+            ?? throw new HubException("Room not found. It may have been ended by its owner.");
+
+        string name;
+        try
+        {
+            name = user.IsGuest() ? Room.GuestName(displayName) : user.GetDisplayName();
+        }
+        catch (DomainValidationException ex)
+        {
+            throw new HubException(ex.Message);
+        }
+
+        await LeaveCurrentBoardAsync();
+        await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(room.Id));
+        // Viewer role: in a room nobody edits anything; calls don't check roles.
+        presence.Join(new PresenceEntry(Context.ConnectionId, room.Id, user.GetUserId(), name, BoardRole.Viewer)
+        {
+            IsRoom = true,
+            IsGuest = user.IsGuest(),
+        });
+
+        await Clients.Caller.CallParticipantsChanged(room.Id, presence.CallOn(room.Id));
+        return room.ToDto(presence.CallOn(room.Id).Count);
+    }
 
     public async Task StartEditing(Guid cardId)
     {
@@ -125,7 +160,7 @@ public sealed class BoardHub(PresenceTracker presence, BoardRepository boards, B
         entry.ScreenSharing = false;
         await Clients.Group(GroupName(entry.BoardId)).CallParticipantsChanged(entry.BoardId, presence.CallOn(entry.BoardId));
 
-        if (existing.Count == 0)
+        if (existing.Count == 0 && !entry.IsRoom) // rooms have no activity feed
             await events.LogAsync(entry.BoardId, Context.User!, ActivityType.CallStarted, "started a call", null, Context.ConnectionAborted);
         return existing;
     }

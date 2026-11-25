@@ -45,4 +45,7 @@ public interface IBoardClient
     /// and <paramref name="payload"/> is the JSON the browser produced. The server relays it without reading it.
     /// </summary>
     Task CallSignal(Guid boardId, string fromConnectionId, string type, string payload);
+
+    /// <summary>The room's owner ended it; everyone in it has been disconnected from it.</summary>
+    Task RoomEnded(Guid roomId);
 }
