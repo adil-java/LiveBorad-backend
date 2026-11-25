@@ -18,6 +18,7 @@ if (Environment.GetEnvironmentVariable("PORT") is { Length: > 0 } port)
 builder.Services.AddOptions<MongoSettings>().BindConfiguration(MongoSettings.Section).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<FirebaseSettings>().BindConfiguration(FirebaseSettings.Section).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<CorsSettings>().BindConfiguration(CorsSettings.Section);
+builder.Services.AddOptions<CallSettings>().BindConfiguration(CallSettings.Section);
 
 // ---- Infrastructure ----
 builder.Services.AddSingleton(TimeProvider.System);
@@ -71,7 +72,8 @@ app.MapGroup("/api")
     .MapMemberEndpoints()
     .MapActivityEndpoints()
     .MapChatEndpoints()
-    .MapDrawingEndpoints();
+    .MapDrawingEndpoints()
+    .MapCallEndpoints();
 
 app.MapHub<BoardHub>("/hubs/board");
 

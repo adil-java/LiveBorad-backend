@@ -52,6 +52,8 @@ public sealed class BoardEvents(
 
         if (connections.Count > 0)
             await Everyone(boardId).PresenceChanged(boardId, presence.UsersOn(boardId));
+        if (connections.Any(c => c.InCall))
+            await Everyone(boardId).CallParticipantsChanged(boardId, presence.CallOn(boardId));
     }
 
     /// <summary>Applies a role change to live connections so hub permission checks see it without rejoining.</summary>

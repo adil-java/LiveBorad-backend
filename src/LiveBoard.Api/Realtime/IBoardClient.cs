@@ -37,4 +37,12 @@ public interface IBoardClient
     Task StrokeProgress(Guid boardId, Guid strokeId, PresenceUserDto user, StrokeTool tool, string color, double width, IReadOnlyList<double> points);
     Task StrokesErased(Guid boardId, IReadOnlyList<Guid> strokeIds);
     Task DrawingCleared(Guid boardId);
+
+    /// <summary>Who is in the board's call, sent to everyone on the board (so non-participants can see a call is running).</summary>
+    Task CallParticipantsChanged(Guid boardId, IReadOnlyList<CallParticipantDto> participants);
+    /// <summary>
+    /// A WebRTC signalling message from another participant: <paramref name="type"/> is "offer", "answer" or "candidate",
+    /// and <paramref name="payload"/> is the JSON the browser produced. The server relays it without reading it.
+    /// </summary>
+    Task CallSignal(Guid boardId, string fromConnectionId, string type, string payload);
 }

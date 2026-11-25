@@ -65,6 +65,12 @@ public sealed record MembersDto(IReadOnlyList<MemberDto> Members, IReadOnlyList<
 
 public sealed record PresenceUserDto(string UserId, string DisplayName);
 
+/// <summary>One browser connection in a board's call. <see cref="ConnectionId"/> is the peer address for signalling.</summary>
+public sealed record CallParticipantDto(string ConnectionId, string UserId, string DisplayName, bool MicOn, bool CameraOn, bool ScreenSharing);
+
+/// <summary>A STUN/TURN server for WebRTC, in the shape browsers expect (RTCIceServer).</summary>
+public sealed record IceServerDto(IReadOnlyList<string> Urls, string? Username, string? Credential);
+
 public sealed record ActivityDto(Guid Id, string ActorId, string ActorName, ActivityType Type, string Summary, Guid? CardId, DateTime CreatedAt);
 
 public sealed record ChatMessageDto(Guid Id, Guid BoardId, string AuthorId, string AuthorName, string Text, DateTime CreatedAt);

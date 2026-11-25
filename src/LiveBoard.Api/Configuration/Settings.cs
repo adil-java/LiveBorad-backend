@@ -18,6 +18,24 @@ public sealed class FirebaseSettings
     [Required] public string ProjectId { get; set; } = string.Empty;
 }
 
+public sealed class CallSettings
+{
+    public const string Section = "Calls";
+
+    /// <summary>
+    /// STUN/TURN servers handed to browsers. STUN lets most peers connect directly; TURN relays media for networks
+    /// that block direct connections. Configure TURN credentials outside the repo (user-secrets / environment).
+    /// </summary>
+    public IceServerSettings[] IceServers { get; set; } = [];
+}
+
+public sealed class IceServerSettings
+{
+    public string[] Urls { get; set; } = [];
+    public string? Username { get; set; }
+    public string? Credential { get; set; }
+}
+
 public sealed class CorsSettings
 {
     public const string Section = "Cors";

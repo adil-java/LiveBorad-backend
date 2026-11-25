@@ -16,6 +16,7 @@ public enum ActivityType
     MemberRoleChanged,
     MemberRemoved,
     DrawingCleared,
+    CallStarted,
 }
 
 /// <summary>
