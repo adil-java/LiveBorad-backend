@@ -47,6 +47,16 @@ public abstract class ApiTestBase(LiveBoardApiFactory factory)
         return new TestUser(id, email, name, token, http);
     }
 
+    /// <summary>A guest, as signed in with Firebase anonymous auth to join a room by code.</summary>
+    protected TestUser NewGuest(string name = "guest")
+    {
+        var id = Guid.NewGuid().ToString("N");
+        var token = TestTokens.CreateGuest(id);
+        var http = Factory.CreateClient();
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return new TestUser(id, string.Empty, name, token, http);
+    }
+
     protected static async Task<MeDto> SyncAsync(TestUser user)
     {
         var response = await user.Http.PostAsync("/api/me/sync", null);
